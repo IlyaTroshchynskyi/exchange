@@ -4,3 +4,4 @@ celerybeat-schedule
 flower
 logs/logs_currency.log
 data/
+exchange_api/__pycache__
