@@ -1,6 +1,0 @@
-name: CICD_exchange_api
-
-on: [push, pull_request]
-
-jobs:
-  my
