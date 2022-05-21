@@ -26,6 +26,6 @@ app.autodiscover_tasks()
 app.conf.beat_schedule = {
     'get-currency-by-api-every-night': {
         'task': 'currency_exchange.tasks.download_exchange_rates',
-        'schedule': crontab(minute='*/60'),
+        'schedule': crontab(minute='0', hour='10'),
     }
 }

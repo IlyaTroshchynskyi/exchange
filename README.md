@@ -7,4 +7,6 @@ other currencies.
 Api for displaying the maximum and minimum 
 exchange rates for a month, a year, 10 years.
 
+Api for saving user's currency exchange operations.
+
 Authorization via jwt token.

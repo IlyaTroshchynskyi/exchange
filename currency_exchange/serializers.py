@@ -86,21 +86,15 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return make_password(value)
 
 
-# class UserProfileSerializer(serializers.ModelSerializer):
-#     """
-#     Serializer for user profile
-#     """
-#     class Meta:
-#         model = User
-#         fields = ('id', 'username', 'email')
-
-
 class UserPasswordChangeSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True, max_length=30, write_only=True)
     password = serializers.CharField(required=True, max_length=30)
     confirmed_password = serializers.CharField(required=True, max_length=30,write_only=True)
 
     def validate(self, data):
+        """
+        Check user password before changing. Check that  password and confirmed_password equal
+        """
         # add here additional check for password strength if needed
         if not self.context['request'].user.check_password(data.get('old_password')):
             raise serializers.ValidationError({'old_password': 'Wrong password.'})
@@ -111,6 +105,9 @@ class UserPasswordChangeSerializer(serializers.Serializer):
         return data
 
     def update(self, instance, validated_data):
+        """
+        Update user password
+        """
         instance.set_password(validated_data['password'])
         instance.save()
         return instance

@@ -1,7 +1,7 @@
 """
     Collect all celery tasks for app currency exchange
 """
-
+import logging
 from datetime import datetime
 
 import requests
@@ -9,6 +9,7 @@ import requests
 from currency_exchange.models import CurrencyRates
 from exchange_api.celery import app
 
+logger = logging.getLogger('currency_exchange')
 
 YEAR = datetime.now().year
 MONTH = datetime.now().month
@@ -35,6 +36,7 @@ def get_currency_rates() -> dict:
     :return: Data from api
     """
     resp = requests.get(URL)
+    logger.debug(f'Response is {resp.status_code}')
     return resp.json()
 
 
@@ -54,6 +56,8 @@ def add_currency_rates_to_db(data: dict) -> str:
                                        purchase_rate=currency.get('purchaseRate'))
 
                 record.save()
+        logger.debug('Rates was updated using api')
         return 'Rates was updated using api'
     else:
+        logger.debug('Db contains rates for this day')
         return 'Db contains rates for this day'

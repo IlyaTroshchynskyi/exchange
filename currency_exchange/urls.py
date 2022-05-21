@@ -6,7 +6,7 @@ from django.urls import path
 from rest_framework.routers import SimpleRouter
 
 from currency_exchange.views import CurrencyRatesViewSet, CurrencyRatesStatistic, UsersExchangeOperationsView, \
-    UserRegistrationView, APIChangePasswordView, UserRetrieveUpdateAPIView, auth
+    UserRegistrationView, APIChangePasswordView, UserRetrieveUpdateAPIView
 
 urlpatterns = [
     path('currency_statistics/', CurrencyRatesStatistic.as_view()),

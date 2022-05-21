@@ -6,26 +6,24 @@ import logging
 
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import Count, Avg, Min, Max
+from django.db.models import Min, Max
 from django.shortcuts import render
 
-from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import generics, mixins, viewsets
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, GenericViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from currency_exchange.filters import FilterCurrency
 from currency_exchange.models import CurrencyRates, UsersExchangeOperations
 from currency_exchange.permissions import IsOwner
 from currency_exchange.serializers import CurrencyRatesSerializer, GetUsersExchangeOperationsSerializer, \
-    CreateUsersExchangeOperationsSerializer, UserCreateSerializer, UserSerializer, UserPasswordChangeSerializer
+    UserCreateSerializer, UserSerializer, UserPasswordChangeSerializer
 
 logger = logging.getLogger('currency_exchange')
 
@@ -38,17 +36,16 @@ class CurrencyRatesViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = CurrencyRatesSerializer
     filter_backends = [DjangoFilterBackend]
     filter_class = FilterCurrency
-    # permission_classes = (IsAuthenticated, )
 
     @extend_schema(
         parameters=[
 
             OpenApiParameter("day_of_rate", OpenApiTypes.DATETIME, OpenApiParameter.QUERY,
-                             description='Set the period for getting currency rates'),
+                             description='Set the date for getting currency rates'),
             OpenApiParameter("day_of_rate_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY,
-                             description='Set the period for getting currency rates'),
+                             description='Set the high date. Format YYYY-MM-DD'),
             OpenApiParameter("day_of_rate_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY,
-                             description='Set the period for getting currency rates'),
+                             description='Set the low date. Format YYYY-MM-DD'),
             OpenApiParameter("to_currency", OpenApiTypes.STR, OpenApiParameter.QUERY,
                              description='Set the currency code for filtering currency'),
         ])
@@ -64,15 +61,13 @@ class CurrencyRatesStatistic(APIView):
     Statistic like min and max
     """
 
-    # permission_classes = (IsAuthenticated, )
-
     @extend_schema(
         parameters=[
 
             OpenApiParameter("day_of_rate_lte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY,
-                             description='Set the period for getting min, max'),
+                             description='Set the high date. Format YYYY-MM-DD'),
             OpenApiParameter("day_of_rate_gte", OpenApiTypes.DATETIME, OpenApiParameter.QUERY,
-                             description='Set the period for getting min, max'),
+                             description='Set the low date. Format YYYY-MM-DD'),
         ])
     def get(self, request, format=None):
         """
@@ -122,7 +117,8 @@ class UsersExchangeOperationsView(mixins.CreateModelMixin,
 class UserRegistrationView(mixins.CreateModelMixin,
                            GenericViewSet):
     """
-    View for creating user
+    View for registration new user. Takes a set of user data: username, email, password.
+    Password will be stored as hash.
     """
     serializer_class = UserCreateSerializer
     queryset = User.objects.all()
@@ -141,7 +137,8 @@ class UserRetrieveUpdateAPIView(mixins.RetrieveModelMixin, mixins.UpdateModelMix
 
 class APIChangePasswordView(generics.UpdateAPIView):
     """
-    View for updating password
+    View for updating user's password. Takes a set of user credentials: old_password,
+    password, confirmed_password
     """
 
     serializer_class = UserPasswordChangeSerializer
@@ -149,9 +146,19 @@ class APIChangePasswordView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, ]
 
     def get_object(self, queryset=None):
+        """
+        Return current user for changing password
+        :param queryset:
+        :return:
+        """
         logger.debug(f'User: {self.request.user} get response by url {self.request.get_full_path()}')
         return self.request.user
 
 
 def auth(request):
+    """
+    View for authentication using github
+    :param request:
+    :return:
+    """
     return render(request, 'oauth.html')

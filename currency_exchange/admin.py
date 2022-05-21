@@ -19,8 +19,8 @@ class UsersExchangeOperationsViewAdmin(admin.ModelAdmin):
 
 
 class UserAdmin(BaseUserAdmin):
-     list_display = ('username', 'email', 'is_staff', 'is_active', 'password')
+    list_display = ('username', 'email', 'is_staff', 'is_active', 'password')
 
-# Re-register UserAdmin
+
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)

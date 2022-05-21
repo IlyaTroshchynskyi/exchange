@@ -5,19 +5,17 @@ import json
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
 from rest_framework.exceptions import ErrorDetail
 from rest_framework.test import APITestCase
-from django.test.utils import CaptureQueriesContext
-from django.db import connection
 from rest_framework import status
-from django.contrib.auth.hashers import check_password
+
 from currency_exchange.models import CurrencyRates, UsersExchangeOperations
-from currency_exchange.serializers import CurrencyRatesSerializer, GetUsersExchangeOperationsSerializer, \
-    UserCreateSerializer
+from currency_exchange.serializers import CurrencyRatesSerializer, \
+    GetUsersExchangeOperationsSerializer
 
 
 class CurrencyRatesApiTestCase(APITestCase):
@@ -52,14 +50,18 @@ class CurrencyRatesApiTestCase(APITestCase):
                                                   day_of_rate=datetime.today().date(),
                                                   purchase_rate='31.5000')
         future_date = datetime.today().date() + timedelta(days=10)
-        self.cur_7 = CurrencyRates.objects.create(to_currency='CZK', sale_rate='1.4450',
-                                                  purchase_rate='1.4150',
-                                                  day_of_rate=datetime.today().date() + timedelta(days=1))
-        self.cur_8 = CurrencyRates.objects.create(to_currency='EUR', sale_rate='34.3500',
-                                                  purchase_rate='33.6000',
-                                                  day_of_rate=datetime.today().date() + timedelta(days=10))
-        self.cur_9 = CurrencyRates.objects.create(to_currency='PLN', sale_rate='8.1300', purchase_rate='7.9500',
-                                                   day_of_rate=datetime.today().date() + timedelta(days=10))
+
+        self.cur_7 = CurrencyRates.objects\
+            .create(to_currency='CZK', sale_rate='1.4450', purchase_rate='1.4150',
+                    day_of_rate=datetime.today().date() + timedelta(days=1))
+
+        self.cur_8 = CurrencyRates.objects\
+            .create(to_currency='EUR', sale_rate='34.3500', purchase_rate='33.6000',
+                    day_of_rate=datetime.today().date() + timedelta(days=10))
+
+        self.cur_9 = CurrencyRates.objects\
+            .create(to_currency='PLN', sale_rate='8.1300', purchase_rate='7.9500',
+                    day_of_rate=datetime.today().date() + timedelta(days=10))
 
         self.cur_10 = CurrencyRates.objects.create(to_currency='USD', sale_rate='33.1800',
                                                    purchase_rate='32.5000',
@@ -171,7 +173,8 @@ class CurrencyRatesApiTestCase(APITestCase):
 
         test_data = CurrencyRatesSerializer([self.cur_6], many=True).data
         current_date = datetime.today().date()
-        response = self.client.get('/api/v1/rates/', {'to_currency': 'USD', 'day_of_rate': current_date})
+        response = self.client.get('/api/v1/rates/',
+                                   {'to_currency': 'USD', 'day_of_rate': current_date})
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -247,7 +250,8 @@ class CurrencyRatesApiTestCase(APITestCase):
         response = self.client.delete(url)
 
         self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
-        self.assertEqual(count-1, UsersExchangeOperations.objects.filter(user=self.user_1.id).count())
+        self.assertEqual(count-1, UsersExchangeOperations.objects.
+                         filter(user=self.user_1.id).count())
 
     def test_get_exchange_operation_permission(self):
         """
@@ -257,7 +261,8 @@ class CurrencyRatesApiTestCase(APITestCase):
         url = reverse('users_exchange-list')
         response = self.client.get(url)
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
-        self.assertEqual({'detail': ErrorDetail(string='Authentication credentials were not provided.',
+        self.assertEqual({'detail':
+                              ErrorDetail(string='Authentication credentials were not provided.',
                                                 code='not_authenticated')},
                          response.data)
 
@@ -323,7 +328,8 @@ class CurrencyRatesApiTestCase(APITestCase):
         self.client.force_login(self.user_2)
         response = self.client.get('/api/v1/retrieve_update_user/' + self.user_3.username + '/')
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
-        self.assertEqual({'detail': ErrorDetail(string='You do not have permission to perform this action.',
+        self.assertEqual({'detail': ErrorDetail(string='You do not have permission '
+                                                       'to perform this action.',
                                                 code='permission_denied')},
                          response.data)
 
@@ -334,7 +340,8 @@ class CurrencyRatesApiTestCase(APITestCase):
         """
         response = self.client.get('/api/v1/retrieve_update_user/' + self.user_3.username + '/')
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
-        self.assertEqual({'detail': ErrorDetail(string='Authentication credentials were not provided.',
+        self.assertEqual({'detail':
+                              ErrorDetail(string='Authentication credentials were not provided.',
                                                 code='not_authenticated')},
                          response.data)
 

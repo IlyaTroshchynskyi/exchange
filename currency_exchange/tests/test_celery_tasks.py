@@ -2,8 +2,8 @@
     Collect all tests for celery tasks
 """
 
-from currency_exchange.tasks import download_exchange_rates
 from rest_framework.test import APITestCase
+from currency_exchange.tasks import download_exchange_rates
 
 
 class TestAddTask(APITestCase):
