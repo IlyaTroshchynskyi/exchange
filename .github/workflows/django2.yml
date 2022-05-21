@@ -54,6 +54,6 @@ jobs:
       run: |
         python manage.py test
     - name: Lint with pylint
-        run: | 
-        pylint ./currency_exchange
-        pylint ./exchange_api
+      run: |
+          pylint ./currency_exchange
+          pylint ./exchange_api
