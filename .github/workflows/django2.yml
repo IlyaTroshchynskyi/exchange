@@ -44,13 +44,12 @@ jobs:
         pipenv install --system --ignore-pipfile
     - name: Run Tests
       env:
-        env:
-          DEBUG: "1"
-          DJANGO_SECRET_KEY: CI_CD_TEST_KEY
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: djtesting
-          POSTGRES_PORT: 5432
+        DEBUG: "1"
+        DJANGO_SECRET_KEY: CI_CD_TEST_KEY
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: djtesting
+        POSTGRES_PORT: 5432
       run: |
         python manage.py test
     - name: Lint with pylint
