@@ -1,0 +1,6 @@
+.env
+.idea/
+celerybeat-schedule
+flower
+logs/logs_currency.log
+data/
