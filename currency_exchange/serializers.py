@@ -1,10 +1,11 @@
 """
     Collect all serializers for app currency exchange
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -35,29 +36,17 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id', 'username', 'email')
 
 
-class CreateUsersExchangeOperationsSerializer(ModelSerializer):
-    """
-    Users exchange operations serializer
-    """
-    user = UserSerializer(read_only=True)
-    amount_operation = serializers.FloatField(read_only=True)
-    currency = serializers.SlugRelatedField(
-        slug_field='to_currency',
-        queryset=CurrencyRates.objects.filter(day_of_rate=datetime.today().date())
-     )
-
-    class Meta:
-        model = UsersExchangeOperations
-        fields = ('count', 'currency', 'user', 'amount_operation')
-
-
 class GetUsersExchangeOperationsSerializer(ModelSerializer):
     """
     Users exchange operations serializer
     """
     currency = serializers.SlugRelatedField(
         slug_field='to_currency',
-        queryset=CurrencyRates.objects.filter(day_of_rate=datetime.today().date())
+        queryset=CurrencyRates.objects
+            .filter(
+            Q(day_of_rate=datetime.today().date()) |
+            Q(day_of_rate=datetime.today().date() + timedelta(days=-1))
+        )
     )
     amount_operation = serializers.FloatField(read_only=True)
     user = serializers.SlugRelatedField(read_only=True, slug_field='username')
